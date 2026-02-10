@@ -51,5 +51,24 @@ X_train_prepared = preprocessor.fit_transform(X_train)
 # On utilise uniquement .transform() pour ne pas "fuiter" d'infos du test
 X_test_prepared = preprocessor.transform(X_test)
 
-print(f"Données d'entraînement préparées : {X_train_prepared.shape}")
-print(f"Données de test préparées : {X_test_prepared.shape}")
+# print(f"Données d'entraînement préparées : {X_train_prepared.shape}")
+# print(f"Données de test préparées : {X_test_prepared.shape}")
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, log_loss
+
+# 1. Initialisation du modèle 
+# On utilise la configuration par défaut pour cette Baseline
+model = LogisticRegression(max_iter=1000)
+
+# 2. Entraînement 
+# On utilise les données préparées (Imputed + Scaled)
+model.fit(X_train_prepared, y_train)
+
+# 3. Prédictions 
+y_pred = model.predict(X_test_prepared)
+y_prob = model.predict_proba(X_test_prepared)
+
+# 4. Évaluation rapide 
+print(f"Accuracy Baseline : {accuracy_score(y_test, y_pred):.2%}")
+print(f"Log-Loss Baseline : {log_loss(y_test, y_prob):.4f}")
