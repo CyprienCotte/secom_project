@@ -5,7 +5,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, log_loss
 
 def load_and_preprocess():
     # Chargement (Slide 4)
@@ -42,5 +42,31 @@ if __name__ == "__main__":
     
     # Évaluation
     y_pred = pipeline_opti.predict(X_test)
-    print("Rapport de Performance Amélioré :")
-    print(classification_report(y_test, y_pred))
+    y_prob = pipeline_opti.predict_proba(X_test)
+    # print("Rapport de Performance Amélioré :")
+    # print(classification_report(y_test, y_pred))
+
+# print(f"Accuracy Baseline : {accuracy_score(y_test, y_pred):.2%}")
+# print(f"Log-Loss Baseline : {log_loss(y_test, y_prob):.4f}")
+
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+# from sklearn.metrics import confusion_matrix, roc_curve, auc
+
+# # # 1. Matrice de Confusion
+# cm = confusion_matrix(y_test, y_pred)
+# plt.figure(figsize=(6,4))
+# sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+# plt.title('Matrice de Confusion : Baseline')
+# plt.ylabel('Réalité')
+# plt.xlabel('Prédiction')
+# plt.show()
+
+# # # 2. Courbe ROC (Slide 14)
+# fpr, tpr, thresholds = roc_curve(y_test, y_prob[:, 1])
+# roc_auc = auc(fpr, tpr)
+# plt.plot(fpr, tpr, label=f'AUC = {roc_auc:.2f}')
+# plt.plot([0, 1], [0, 1], 'k--')
+# plt.title('Courbe ROC - Performance du Modèle')
+# plt.legend()
+# plt.show()
