@@ -91,3 +91,20 @@ top_5_critical = importance_df.sort_values(by='Coefficient', ascending=False).he
 print("\n--- TOP 5 DES CAPTEURS LES PLUS CRITIQUES ---")
 print(top_5_critical[['Feature', 'Coefficient', 'Odds_Ratio']])
 
+import shap
+
+# 1. On prépare les données (il faut qu'elles soient passées par le scaler/imputer)
+# On récupère le transformateur du pipeline (sans le modèle final)
+preprocessor = pipeline_opti[:-1]
+X_test_transformed = preprocessor.transform(X_test)
+feature_names = X_train.columns[pipeline_opti.named_steps['selectkbest'].get_support()]
+
+# 2. Création de l'Explainer pour la Régression Logistique
+explainer = shap.LinearExplainer(
+    pipeline_opti.named_steps['logisticregression'], 
+    X_test_transformed
+)
+shap_values = explainer.shap_values(X_test_transformed)
+
+# 3. Visualisation (Summary Plot)
+shap.summary_plot(shap_values, X_test_transformed, feature_names=feature_names)
