@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.impute import SimpleImputer
@@ -36,29 +37,57 @@ if __name__ == "__main__":
     pipeline_opti.fit(X_train, y_train)
     y_pred = pipeline_opti.predict(X_test)
     y_prob = pipeline_opti.predict_proba(X_test)
-    print(f"Nouveau Balanced Accuracy (SMOTE) : {balanced_accuracy_score(y_test, y_pred):.4f}")
-    print("Rapport de Performance Amélioré :")
-    print(classification_report(y_test, y_pred))
+#     print(f"Nouveau Balanced Accuracy (SMOTE) : {balanced_accuracy_score(y_test, y_pred):.4f}")
+#     print("Rapport de Performance Amélioré :")
+#     print(classification_report(y_test, y_pred))
 
-print(f"Accuracy Baseline : {accuracy_score(y_test, y_pred):.2%}")
-print(f"Log-Loss Baseline : {log_loss(y_test, y_prob):.4f}")
+# print(f"Accuracy Baseline : {accuracy_score(y_test, y_pred):.2%}")
+# print(f"Log-Loss Baseline : {log_loss(y_test, y_prob):.4f}")
 
 
 
-# # # 1. Matrice de Confusion
-cm = confusion_matrix(y_test, y_pred)
-plt.figure(figsize=(6,4))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-plt.title('Matrice de Confusion : Baseline')
-plt.ylabel('Réalité')
-plt.xlabel('Prédiction')
-plt.show()
+# # # # 1. Matrice de Confusion
+# cm = confusion_matrix(y_test, y_pred)
+# plt.figure(figsize=(6,4))
+# sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+# plt.title('Matrice de Confusion : Baseline')
+# plt.ylabel('Réalité')
+# plt.xlabel('Prédiction')
+# plt.show()
 
-# # # 2. Courbe ROC (Slide 14)
-fpr, tpr, thresholds = roc_curve(y_test, y_prob[:, 1])
-roc_auc = auc(fpr, tpr)
-plt.plot(fpr, tpr, label=f'AUC = {roc_auc:.2f}')
-plt.plot([0, 1], [0, 1], 'k--')
-plt.title('Courbe ROC - Performance du Modèle')
-plt.legend()
-plt.show()
+# # # # 2. Courbe ROC (Slide 14)
+# fpr, tpr, thresholds = roc_curve(y_test, y_prob[:, 1])
+# roc_auc = auc(fpr, tpr)
+# plt.plot(fpr, tpr, label=f'AUC = {roc_auc:.2f}')
+# plt.plot([0, 1], [0, 1], 'k--')
+# plt.title('Courbe ROC - Performance du Modèle')
+# plt.legend()
+# plt.show()
+
+
+
+
+
+# 1. Récupérer les noms des colonnes après le nettoyage initial
+feature_names = X_train.columns
+
+# 2. Récupérer le masque des colonnes sélectionnées par SelectKBest
+mask = pipeline_opti.named_steps['selectkbest'].get_support()
+selected_features = feature_names[mask]
+
+# 3. Récupérer les coefficients du modèle
+coefs = pipeline_opti.named_steps['logisticregression'].coef_[0]
+
+# 4. Créer un DataFrame pour la visualisation
+importance_df = pd.DataFrame({
+    'Feature': selected_features,
+    'Coefficient': coefs,
+    'Odds_Ratio': np.exp(coefs) # Calcul de l'Odds Ratio (Slide 18)
+})
+
+# 5. Trier par impact (coefficients les plus élevés = plus de risque)
+top_5_critical = importance_df.sort_values(by='Coefficient', ascending=False).head(5)
+
+print("\n--- TOP 5 DES CAPTEURS LES PLUS CRITIQUES ---")
+print(top_5_critical[['Feature', 'Coefficient', 'Odds_Ratio']])
+
